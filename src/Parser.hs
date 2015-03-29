@@ -10,7 +10,7 @@ import Text.ParserCombinators.Parsec
 parseTypeDefs :: String -> Either ParseError [TypeDef]
 parseTypeDefs = parse typeDefs "(unknown)"
 
-typeDefs = spaces >> many typeDef <* spaces <* eof
+typeDefs = spaces >> many (typeDef <* spaces) <* eof
 
 typeDef = do
     name <- identifier

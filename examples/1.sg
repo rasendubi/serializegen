@@ -1,0 +1,11 @@
+Point: {
+	x: double,
+	y: double
+}
+
+Ellipse: {
+	center: Point,
+    r: double,
+	a: double,
+    theta: double
+}
