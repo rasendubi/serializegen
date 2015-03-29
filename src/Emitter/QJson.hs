@@ -24,7 +24,7 @@ emitStruct (TypeDef name type_def) = BS.concat
     , emitType type_def
     , " "
     , BS.pack name
-    , ";"
+    , ";\n\n"
     ]
 
 emitType (PlainType name) = BS.pack name
@@ -48,8 +48,8 @@ emitField (ObjectEntry key valueType) = BS.concat
 emitDefs = BS.concat . fmap emitDef
 
 emitDef (TypeDef name def) = BS.concat
-    [ "\n\ntemplate<>\n"
-    , "struct JsonEmitter<", BS.pack name, "> {\n"
+    [ "template<>\n"
+    , "struct JsonSerializer<", BS.pack name, "> {\n"
     , "\tstatic QJsonValue toJson(const ", BS.pack name, "& value) {\n"
     , "\t\treturn ", emitSerialize "value" def, ";\n"
     , "\t}\n"
@@ -63,15 +63,18 @@ emitDef (TypeDef name def) = BS.concat
 emitSerialize value (PlainType name) = BS.concat
     [ "toJsonValue<", BS.pack name, ">(", value, ")" ]
 emitSerialize value (Object fields) = BS.concat
-    [ "QJsonObject { ", emitSerializeFields (value `BS.append` ".toObject()") fields, "}" ]
+    [ "QJsonObject { ", emitSerializeFields value fields, "}" ]
 emitSerialize value (List (PlainType name)) = BS.concat
     [ "fromJsonList<", BS.pack name, ">(", value, ".toArray())" ]
 emitSerialize value (List _) = error "arbitrary lists are not supported"
 
-emitSerializeFields base = BS.intercalate ", " . fmap serializeField
+emitSerializeFields base = BS.concat . fmap serializeField
     where
-        serializeField (ObjectEntry key valueType) =
-            emitSerialize (BS.concat [ base, "[\"", BS.pack key, "\"]" ]) valueType
+        serializeField (ObjectEntry key valueType) = BS.concat
+            [ "{ \"", BS.pack key, "\", "
+            , emitSerialize (BS.concat [ base, ".", BS.pack key ]) valueType
+            , " }, "
+            ]
 
 emitDeserialize value (PlainType name) = BS.concat
     [ "fromJsonValue<", BS.pack name, ">(", value, ")" ]
