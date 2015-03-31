@@ -1,11 +1,11 @@
 Point: {
-	x: double,
-	y: double
+    x: double,
+    y: double
 }
 
 Ellipse: {
-	center: Point,
+    center: Point,
     r: double,
-	a: double,
+    a: double,
     theta: double
 }
